@@ -23,10 +23,6 @@ impl StatusDialog {
         content.set_margin_start(14);
         content.set_margin_end(14);
 
-        let title = Label::new(Some("请选择签到结果"));
-        title.set_xalign(0.0);
-        content.append(&title);
-
         let actions = GtkBox::new(Orientation::Horizontal, 8);
         for status in AttendanceStatus::ALL {
             let button = Button::with_label(status.label());
@@ -59,7 +55,7 @@ impl StatusDialog {
     fn build(cell: &GtkBox) -> Window {
         let window = Window::builder()
             .modal(true)
-            .title("签到")
+            .title("checkin")
             .default_width(360)
             .default_height(120)
             .build();
