@@ -1,9 +1,8 @@
 use gtk4::prelude::*;
-use gtk4::{Box as GtkBox, ComboBoxText, Dialog, Entry, Label, Orientation, ResponseType, Window};
+use gtk4::{Box as GtkBox, Button, ComboBoxText, Entry, Label, Orientation, Window};
 
 use crate::core::{CellKind, Subject};
 
-/// Editable cell data used by the edit dialog.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CellEditDraft {
     pub kind: CellKind,
@@ -50,7 +49,6 @@ impl CellEditDraft {
     }
 }
 
-/// Modal dialog used by edit mode for changing type and name.
 pub struct CellEditDialog;
 
 impl CellEditDialog {
@@ -58,9 +56,12 @@ impl CellEditDialog {
     where
         F: Fn(CellEditDraft) + 'static,
     {
-        let dialog = Self::build(cell, &initial);
-        let content = dialog.content_area();
-        let form = GtkBox::new(Orientation::Vertical, 8);
+        let window = Self::build(cell);
+        let content = GtkBox::new(Orientation::Vertical, 8);
+        content.set_margin_top(14);
+        content.set_margin_bottom(14);
+        content.set_margin_start(14);
+        content.set_margin_end(14);
 
         let type_label = Label::new(Some("类型"));
         type_label.set_xalign(0.0);
@@ -82,12 +83,6 @@ impl CellEditDialog {
             initial.name.as_deref().unwrap_or(""),
         );
 
-        form.append(&type_label);
-        form.append(&kind_combo);
-        form.append(&name_label);
-        form.append(&name_entry);
-        content.append(&form);
-
         {
             let name_label = name_label.clone();
             let name_entry = name_entry.clone();
@@ -101,9 +96,25 @@ impl CellEditDialog {
             });
         }
 
-        dialog.connect_response(move |dialog, response| {
-            if response == ResponseType::Accept {
-                let kind = kind_combo
+        let actions = GtkBox::new(Orientation::Horizontal, 8);
+        let cancel_button = Button::with_label("取消");
+        let save_button = Button::with_label("保存");
+        actions.append(&cancel_button);
+        actions.append(&save_button);
+
+        {
+            let window = window.clone();
+            cancel_button.connect_clicked(move |_| {
+                window.close();
+            });
+        }
+
+        {
+            let window = window.clone();
+            let kind_combo_for_save = kind_combo.clone();
+            let name_entry_for_save = name_entry.clone();
+            save_button.connect_clicked(move |_| {
+                let kind = kind_combo_for_save
                     .active_id()
                     .as_deref()
                     .and_then(Self::kind_from_id)
@@ -113,32 +124,36 @@ impl CellEditDialog {
                     name: if kind == CellKind::Transparent {
                         None
                     } else {
-                        Some(name_entry.text().to_string())
+                        Some(name_entry_for_save.text().to_string())
                     },
                 };
                 on_save(draft);
-            }
+                window.close();
+            });
+        }
 
-            dialog.close();
-        });
-
-        dialog.present();
+        content.append(&type_label);
+        content.append(&kind_combo);
+        content.append(&name_label);
+        content.append(&name_entry);
+        content.append(&actions);
+        window.set_child(Some(&content));
+        window.present();
     }
 
-    fn build(cell: &GtkBox, _initial: &CellEditDraft) -> Dialog {
-        let dialog = Dialog::builder()
+    fn build(cell: &GtkBox) -> Window {
+        let window = Window::builder()
             .modal(true)
             .title("编辑单元格")
             .default_width(320)
+            .default_height(180)
             .build();
 
-        if let Some(window) = cell.root().and_then(|root| root.downcast::<Window>().ok()) {
-            dialog.set_transient_for(Some(&window));
+        if let Some(parent) = cell.root().and_then(|root| root.downcast::<Window>().ok()) {
+            window.set_transient_for(Some(&parent));
         }
 
-        dialog.add_button("取消", ResponseType::Cancel);
-        dialog.add_button("保存", ResponseType::Accept);
-        dialog
+        window
     }
 
     fn kind_id(kind: CellKind) -> &'static str {
