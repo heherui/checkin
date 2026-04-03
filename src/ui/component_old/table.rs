@@ -1,29 +1,33 @@
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::fs;
 use std::io;
 use std::path::Path;
 
-use rand::prelude::SliceRandom;
-use rand::Rng;
 use serde::{Deserialize, Serialize};
 
-/// A rectangular table layout.
-/// `subjects` only stores explicitly assigned positions.
-/// Any missing position is treated as an empty active seat.
-#[derive(Debug, Clone)]
-pub struct Table {
+#[derive(Debug)]
+pub struct Table
+{
     row_count: u32,
     column_count: u32,
-    subjects: HashMap<Position, Subject>,
+    cells:HashMap<Position,Box<dyn Cell>>,
 }
 
-/// Zero-based table coordinate.
+pub trait Cell: Debug+Clone
+{
+    fn lable(&self)-> String;
+    fn editable(&self)-> bool;
+}
+
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Position {
+pub struct Position 
+{
     pub x: u32,
     pub y: u32,
 }
-
+/* 
 /// Data rendered inside a cell.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Subject {
@@ -51,15 +55,8 @@ impl Subject {
             Self::Block(name) | Self::Some(name) => Some(name),
         }
     }
-}
+} */
 
-/// Canonical domain kind for each table cell.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum CellKind {
-    Active,
-    Blocked,
-    Transparent,
-}
 
 impl Table {
     /// Creates a table and normalizes subjects into a position-indexed map.
@@ -241,38 +238,6 @@ impl Table {
 
         let payload: TableConfig = serde_json::from_str(&text).map_err(io::Error::other)?;
         Ok(payload.into_table())
-    }
-
-    pub fn default_table() -> Self {
-        const ROW_COUNT: u32 = 5;
-        const COLUMN_COUNT: u32 = 6;
-        const NAMES: [&str; 24] = [
-            "Alice", "Ben", "Cindy", "Dylan", "Ethan", "Fiona", "Gavin", "Helen", "Ivy", "Jason",
-            "Kira", "Leo", "Mila", "Nora", "Owen", "Penny", "Quinn", "Ruby", "Sam", "Tina", "Uma",
-            "Vince", "Wendy", "Zack",
-        ];
-
-        let mut rng = rand::thread_rng();
-        let mut subjects = Vec::new();
-
-        for y in 0..ROW_COUNT {
-            for x in 0..COLUMN_COUNT {
-                let roll = rng.gen_range(0..10);
-                let subject = if roll == 0 {
-                    Subject::Transparent
-                } else if roll <= 2 {
-                    Subject::Block(format!("Block {}", rng.gen_range(1..=9)))
-                } else {
-                    let name = NAMES
-                        .choose(&mut rng)
-                        .map_or_else(|| String::from("Guest"), |name| (*name).to_owned());
-                    Subject::Some(name)
-                };
-                subjects.push((Position { x, y }, subject));
-            }
-        }
-
-        Self::new(ROW_COUNT, COLUMN_COUNT, subjects)
     }
 
     fn normalize_subject(subject: Option<Subject>) -> Option<Subject> {

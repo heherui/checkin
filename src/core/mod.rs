@@ -1,11 +1,6 @@
-mod attendance;
-mod configuration;
-mod mode;
-mod persistence;
-mod table;
+pub mod persistence;
+pub mod data_model;
+pub mod codec;
 
-pub use attendance::{AttendanceBook, AttendanceStatistics, AttendanceStatus};
-pub use configuration::Configuration;
-pub use mode::AppMode;
-pub use persistence::{AttendanceSave, PositionSave, SaveData, TableSave};
-pub use table::{CellKind, Position, Subject, Table};
+pub use data_model::{Person, PersonsList, Position};
+pub use persistence::{AppPaths, Storage};

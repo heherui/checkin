@@ -12,7 +12,8 @@ use crate::ui::ui_styles::ensure_ui_styles;
 use crate::utilities::write_text_to_clipboard;
 
 /// Top-level app content that composes all UI components.
-pub struct AppView {
+pub struct AppView
+{
     root: GtkBox,
     _configuration: Configuration,
     _mode_switch: ModeSwitch,
@@ -21,9 +22,11 @@ pub struct AppView {
     pub stats_label: Label,
 }
 
-impl AppView {
+impl AppView 
+{
     /// Creates the top-level app view.
-    pub fn new(table: &Table, configuration: Configuration) -> Self {
+    pub fn new(table: &Table, configuration: Configuration) -> Self 
+    {
         ensure_ui_styles();
 
         let root = GtkBox::new(Orientation::Vertical, 8);
@@ -41,31 +44,29 @@ impl AppView {
         mode_switcher.append(mode_switch.widget());
         mode_switcher.append(&copy_statistics_button);
 
-        let board_shell = GtkBox::new(Orientation::Vertical, 0);
-        board_shell.add_css_class("board-shell");
-        board_shell.set_vexpand(true);
+        let table_panel = GtkBox::new(Orientation::Vertical, 0);
+        table_panel.add_css_class("table-panel");
+        table_panel.set_vexpand(true);
 
         let table_view = Rc::new(TableView::new(table));
         let statistics_panel = StatisticsPanel::new(table_view.get_statistics());
         let stats_label = statistics_panel.summary_label();
 
-        {
-            let panel_for_updates = statistics_panel.clone();
-            table_view.connect_status_changed(move |statistics| {
-                panel_for_updates.update(statistics);
-            });
-        }
-        {
-            let config_file = configuration.config_file.clone();
-            table_view.connect_table_exported(move |table| {
-                if let Err(error) = table.write_config(&config_file) {
-                    eprintln!(
-                        "failed to write table config to {}: {error}",
-                        config_file.display()
-                    );
-                }
-            });
-        }
+        let panel_for_updates = statistics_panel.clone();
+        table_view.connect_status_changed(move |statistics| {
+            panel_for_updates.update(statistics);
+        });
+        
+        let table_conf_file = configuration.table_configuration_file.clone();
+        table_view.connect_table_exported(move |table| {
+            if let Err(error) = table.write_config(&table_conf_file) {
+                eprintln!(
+                    "failed to write table config to {}: {error}",
+                    table_conf_file.display()
+                );
+            }
+        });
+
         {
             let table_view = Rc::clone(&table_view);
             let copy_statistics_button = copy_statistics_button.clone();
@@ -85,10 +86,10 @@ impl AppView {
             });
         }
 
-        board_shell.append(table_view.widget());
+        table_panel.append(table_view.widget());
         root.append(statistics_panel.widget());
         root.append(&mode_switcher);
-        root.append(&board_shell);
+        root.append(&table_panel);
 
         Self {
             root,
@@ -101,7 +102,8 @@ impl AppView {
     }
 
     /// Returns the top-level root widget.
-    pub fn widget(&self) -> &GtkBox {
+    pub fn widget(&self) -> &GtkBox
+    {
         &self.root
     }
 }

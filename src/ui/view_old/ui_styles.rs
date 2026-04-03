@@ -61,7 +61,7 @@ fn build_ui_css() -> String {
             color: #334155;
             font-size: 12px;
         }
-        .board-shell {
+        .table-panel {
             padding: 0px;
         }
         .table-board {

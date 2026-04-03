@@ -21,13 +21,15 @@ type StatusChangedCallback = Rc<dyn Fn(AttendanceStatistics) + 'static>;
 type TableExportedCallback = Rc<dyn Fn(Table) + 'static>;
 
 #[derive(Clone)]
-struct CellWidgets {
+struct CellWidgets 
+{
     position: Position,
     container: GtkBox,
     surface: Label,
 }
 
-struct ViewState {
+struct ViewState 
+{
     mode: AppMode,
     selected_surface: Option<Label>,
     board: Option<AspectFrame>,
@@ -40,12 +42,15 @@ struct ViewState {
     on_table_exported: Vec<TableExportedCallback>,
 }
 
-impl ViewState {
-    fn new(table: &Table) -> Self {
+impl ViewState 
+{
+    fn new(table: &Table) -> Self 
+    {
         let table = table.clone();
         let attendance = AttendanceBook::new(&table);
 
-        Self {
+        Self 
+        {
             mode: AppMode::default(),
             selected_surface: None,
             board: None,
@@ -60,13 +65,16 @@ impl ViewState {
     }
 }
 
-pub struct TableView {
+pub struct TableView 
+{
     root: AspectFrame,
     state: Rc<RefCell<ViewState>>,
 }
 
-impl TableView {
-    pub fn new(table: &Table) -> Self {
+impl TableView 
+{
+    pub fn new(table: &Table) -> Self 
+    {
         let state = Rc::new(RefCell::new(ViewState::new(table)));
         let root = AspectFrame::builder()
             .ratio(Self::table_ratio(table))
@@ -107,11 +115,13 @@ impl TableView {
         self.state.borrow_mut().on_table_exported.push(callback);
     }
 
-    pub fn widget(&self) -> &AspectFrame {
+    pub fn widget(&self) -> &AspectFrame 
+    {
         &self.root
     }
 
-    pub fn set_mode(&self, mode: AppMode) {
+    pub fn set_mode(&self, mode: AppMode) 
+    {
         let mut statistics_to_emit = None;
         let mut table_to_emit: Option<(Table, Vec<TableExportedCallback>)> = None;
 
@@ -152,12 +162,14 @@ impl TableView {
         }
     }
 
-    pub fn get_statistics(&self) -> AttendanceStatistics {
+    pub fn get_statistics(&self) -> AttendanceStatistics 
+    {
         let state = self.state.borrow();
         state.attendance.statistics(&state.table)
     }
 
-    pub fn build_statistics_export_text_zh(&self, time: &SystemTime) -> String {
+    pub fn build_statistics_export_text_zh(&self, time: &SystemTime) -> String 
+    {
         let state = self.state.borrow();
         state.attendance.build_export_text_zh(&state.table, time)
     }
