@@ -1,6 +1,6 @@
-mod widget
+pub mod widget
 {
-    use gtk4::{gdk, glib, traits::{StyleContextExt, WidgetExt}};
+    use gtk4::{gdk, glib};
 
     use crate::ui::component::table_cell::data::TableCellData;
 
@@ -8,13 +8,15 @@ mod widget
     {
         use std::cell::RefCell;
 
-        use gtk4::{glib::{self, subclass::{object::{ObjectImpl, ObjectImplExt}, types::{ObjectSubclass, ObjectSubclassExt}}}, subclass::{box_::BoxImpl, widget::WidgetImpl}, traits::{BoxExt, WidgetExt}};
+        use gtk4::{glib::{self, subclass::{object::{ObjectImpl, ObjectImplExt}, types::{ObjectSubclass, ObjectSubclassExt}}}, subclass::{box_::BoxImpl, widget::WidgetImpl}, traits::{BoxExt, StyleContextExt, WidgetExt}};
 
         #[derive(Default)]
         pub struct TableCell
         {
             pub container: RefCell<Option<gtk4::Box>>,
             pub label: RefCell<Option<gtk4::Label>>,
+            pub container_css: RefCell<Option<gtk4::CssProvider>>,
+            pub label_css: RefCell<Option<gtk4::CssProvider>>,
         }
 
         #[glib::object_subclass]
@@ -23,7 +25,7 @@ mod widget
             type Type = super::TableCell;
             type ParentType = gtk4::Box;
             
-            const NAME: &'static str = "TableCell";
+            const NAME: &'static str = "CheckinTableCell";
         }
 
         impl ObjectImpl for TableCell 
@@ -53,8 +55,19 @@ mod widget
                 container.append(&label);
                 obj.append(&container);
 
+                let container_css = gtk4::CssProvider::new();
+                container
+                    .style_context()
+                    .add_provider(&container_css, gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION);
+                let label_css = gtk4::CssProvider::new();
+                label
+                    .style_context()
+                    .add_provider(&label_css, gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION);
+
                 *self.container.borrow_mut() = Some(container);
                 *self.label.borrow_mut() = Some(label);
+                *self.container_css.borrow_mut() = Some(container_css);
+                *self.label_css.borrow_mut() = Some(label_css);
             }
         }
         impl WidgetImpl for TableCell {}
@@ -88,6 +101,14 @@ mod widget
             let label = label_ref
                 .as_ref()
                 .ok_or_else(|| "TableCell label not initialized".to_string())?;
+            let container_css_ref = imp.container_css.borrow();
+            let container_css = container_css_ref
+                .as_ref()
+                .ok_or_else(|| "TableCell container css not initialized".to_string())?;
+            let label_css_ref = imp.label_css.borrow();
+            let label_css = label_css_ref
+                .as_ref()
+                .ok_or_else(|| "TableCell label css not initialized".to_string())?;
 
             let text = match &data
             {
@@ -109,38 +130,26 @@ mod widget
 
             label.set_text(&text);
 
-            if let Some(color) = cell_bg
+            let bg_css = match cell_bg.and_then(|c| gdk::RGBA::parse(c).ok())
             {
-                if let Ok(rgba) = gdk::RGBA::parse(color)
-                {
-                    let css = format!("* {{ background-color: {}; }}", rgba.to_string());
-                    let provider = gtk4::CssProvider::new();
-                    provider.load_from_data(&css);
-                    container
-                        .style_context()
-                        .add_provider(&provider, gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION);
-                }
-            }
+                Some(rgba) => format!("* {{ background-color: {}; }}", rgba.to_string()),
+                None => "* { background-color: transparent; }".to_string(),
+            };
+            container_css.load_from_data(&bg_css);
 
-            if let Some(color) = label_color
+            let label_css_text = match label_color.and_then(|c| gdk::RGBA::parse(c).ok())
             {
-                if let Ok(rgba) = gdk::RGBA::parse(color)
-                {
-                    let css = format!("* {{ color: {}; }}", rgba.to_string());
-                    let provider = gtk4::CssProvider::new();
-                    provider.load_from_data(&css);
-                    label
-                        .style_context()
-                        .add_provider(&provider, gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION);
-                }
-            }
+                Some(rgba) => format!("* {{ color: {}; }}", rgba.to_string()),
+                None => "* { color: inherit; }".to_string(),
+            };
+            label_css.load_from_data(&label_css_text);
 
             Ok(())
         }
     }
 }
 
-mod data 
+pub mod data 
 {
     use crate::core::Person;
 
