@@ -4,9 +4,10 @@ use atomic_write_file::AtomicWriteFile;
 
 use crate::core::persistence::AppPaths;
 
+#[derive(Debug)]
 pub struct Storage
 {
-
+    
 }
 
 impl Storage
@@ -17,6 +18,7 @@ impl Storage
     }
 }
 
+#[derive(Debug)]
 pub enum StorageError
 {
     IO(std::io::Error),
@@ -24,11 +26,11 @@ pub enum StorageError
 
 impl Storage 
 {
-    pub fn save<T>(&self, data:Vec<u8>, path:&AppPaths)-> Result<(),StorageError>
+    pub fn save(&self, data:Vec<u8>, path:&AppPaths)-> Result<(),StorageError>
     {
         let path = path.solved();
 
-        if let Err(e) = self.ensure_exists(path) 
+        if let Err(e) = self.ensure_exists(&path) 
         {
             return Err(StorageError::IO(e))
         };
@@ -54,7 +56,7 @@ impl Storage
         return Ok(());
     }
 
-    fn ensure_exists(&self, path:PathBuf) -> std::io::Result<PathBuf> 
+    fn ensure_exists(&self, path:&PathBuf)-> Result<(),std::io::Error>
     {   
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
@@ -65,6 +67,6 @@ impl Storage
             .append(true)
             .open(&path)?;
 
-        Ok(path)
+        Ok(())
     }
 }

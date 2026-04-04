@@ -1,7 +1,8 @@
 use std::env;
+use std::io::empty;
 use std::path::{Path, PathBuf};
 
-use checkin::{AppView, Configuration, Position, Subject, Table, APPLICATION_ID};
+use checkin::APPLICATION_ID;
 use gtk4::prelude::*;
 use gtk4::{Application, ApplicationWindow};
 
@@ -66,6 +67,28 @@ fn parse_configuration(args: Vec<String>) -> Configuration
         index += 1;
     }
     Configuration::new(table_configuration_file)
+}
+
+pub fn class_table()-> checkin::core::PersonsList
+{
+    const COLUMN_COUNT:u32 = 3+1+3+1+2;
+    const ROW_COUNT:u32 = 7;
+
+    let mut columns:Vec<Vec<checkin::core::Person>> = vec![];
+    let empty_column:Vec<checkin::core::Person> = vec![];
+    for c in 1..10 
+    {
+        if c == 4 || c == 8
+        {
+            columns.push(empty_column.clone());
+        }
+    }
+
+    return checkin::core::PersonsList {
+        colomn_count: todo!(),
+        row_count: todo!(),
+        persons: todo!(),
+    }
 }
 
 pub fn default_table() -> Table 
