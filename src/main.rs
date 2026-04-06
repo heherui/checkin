@@ -1,137 +1,119 @@
-use std::env;
-use std::io::empty;
-use std::path::{Path, PathBuf};
-
+use checkin::core::Person;
+use checkin::ui::component::{
+    Table, TableElement, TableElementMap, TablePersonStatus, TablePersonsStatusMap
+};
 use checkin::APPLICATION_ID;
 use gtk4::prelude::*;
 use gtk4::{Application, ApplicationWindow};
+use rand::Rng;
+use uuid::Uuid;
 
-fn main() 
+fn main()
 {
-    let configuration = parse_configuration(env::args().skip(1).collect());
     let app = Application::builder()
         .application_id(APPLICATION_ID)
         .build();
 
-    app.connect_activate(move |app| {
-        let window = ApplicationWindow::builder()
-            .application(app)
-            .title("Checkin")
-            .default_width(950)
-            .default_height(620)
-            .build();
-
-        let table = if configuration.table_configuration_file.exists() {
-            Table::load_config(&configuration.table_configuration_file).unwrap_or_else(|error| {
-                eprintln!(
-                    "failed to load config {}: {error}, using default table",
-                    configuration.table_configuration_file.display()
-                );
-                default_table()
-            })
-        } else {
-            default_table()
-        };
-        let app_view = AppView::new(&table, configuration.clone());
-        window.set_child(Some(app_view.widget()));
-        window.present();
-    });
+    app.connect_activate(build_ui);
 
     app.run();
 }
 
-fn parse_configuration(args: Vec<String>) -> Configuration 
+fn build_ui(app: &Application)
 {
-    let mut table_configuration_file = env::current_exe()
-        .ok()
-        .and_then(|path| path.parent().map(Path::to_path_buf))
-        .or_else(|| env::current_dir().ok())
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join("table.conf.json");
-    let mut index = 0usize;
-    while index < args.len() {
-        let arg = &args[index];
-        if let Some(path) = arg.strip_prefix("--config=") {
-            table_configuration_file = PathBuf::from(path);
-            index += 1;
-            continue;
-        }
-        if arg == "--config" {
-            if let Some(path) = args.get(index + 1) {
-                table_configuration_file = PathBuf::from(path);
-                index += 2;
-                continue;
-            }
-            eprintln!("--config requires a file path, falling back to default");
-        }
-        index += 1;
+    let window = ApplicationWindow::builder()
+        .application(app)
+        .title("Checkin")
+        .default_width(950)
+        .default_height(620)
+        .build();
+
+    let table = Table::new();
+    let table_element_map = default_table_element_map();
+    let table_persons_status_map = default_table_persons_status_map(&table_element_map);
+
+    if let Err(e) = table.set_element_map(table_element_map)
+    {
+        eprintln!("failed to set table element map: \n\t{e}");
     }
-    Configuration::new(table_configuration_file)
+    if let Err(e) = table.set_persons_status_map(table_persons_status_map)
+    {
+        eprintln!("failed to set table status map: \n\t{e}");
+    }
+
+    window.set_child(Some(&table));
+    window.present();
 }
 
-pub fn class_table()-> checkin::core::PersonsList
+fn default_table_element_map() -> TableElementMap
 {
-    const COLUMN_COUNT:u32 = 3+1+3+1+2;
-    const ROW_COUNT:u32 = 7;
+    const ROW_COUNT: usize = 8;
+    const COLUMN_COUNT: usize = 10;
+    const AISLE_COLUMNS: [usize; 2] = [3, 7];
 
-    let mut columns:Vec<Vec<checkin::core::Person>> = vec![];
-    let empty_column:Vec<checkin::core::Person> = vec![];
-    for c in 1..10 
+    let mut student_index: usize = 1;
+    let mut rows: Vec<Vec<TableElement>> = Vec::with_capacity(ROW_COUNT);
+
+    for y in 0..ROW_COUNT
     {
-        if c == 4 || c == 8
+        let mut subjects: Vec<TableElement> = Vec::with_capacity(COLUMN_COUNT);
+        for x in 0..COLUMN_COUNT
         {
-            columns.push(empty_column.clone());
+            if AISLE_COLUMNS.contains(&x)
+            {
+                subjects.push(TableElement::Transparent);
+            }
+            else if y == 0
+            {
+                if x == 4 || x == 5 || x == 6
+                {
+                    subjects.push(TableElement::Block {
+                        name: Some(String::from("讲台")),
+                    });
+                }
+                else
+                {
+                    subjects.push(TableElement::Transparent);
+                }
+            }
+            else
+            {
+                let person = Person {
+                    name: format!("person {:02}", student_index),
+                };
+                student_index += 1;
+                subjects.push(TableElement::Person {
+                    uuid: Uuid::new_v4(),
+                    person,
+                });
+            };
         }
+        rows.push(subjects);
     }
 
-    return checkin::core::PersonsList {
-        colomn_count: todo!(),
-        row_count: todo!(),
-        persons: todo!(),
-    }
+    return TableElementMap::new(rows);
 }
 
-pub fn default_table() -> Table 
+fn default_table_persons_status_map(elements: &TableElementMap) -> TablePersonsStatusMap
 {
-    const ROW_COUNT: u32 = 8;
-    const COLUMN_COUNT: u32 = 10;
-    const STUDENT_COUNT: u32 = 51;
-    const SEAT_COLUMNS: [u32; 8] = [0, 1, 3, 4, 5, 6, 8, 9];
-
-    let mut subjects = Vec::new();
-
-    // Top row with center lectern and no student seats.
-    for x in 0..COLUMN_COUNT 
+    let mut result = TablePersonsStatusMap::new();
+    for row in elements.rows.iter()
     {
-        let subject = if (x == 4)|(x == 5) {
-            Subject::Block(String::from("讲台"))
-        } else {
-            Subject::Transparent
+        for element in row
+        {
+            if let TableElement::Person { uuid, person: _ } = element
+            {
+                let rand_0:bool = rand::thread_rng().gen_bool(0.5);
+                let rand_1:bool = rand::thread_rng().gen_bool(0.5);
+                let status = match (rand_0, rand_1) 
+                {
+                    (true, true) => TablePersonStatus::Checked,
+                    (false, false) => TablePersonStatus::Hanged,
+                    _ => TablePersonStatus::Unchecked,
+                };
+                result.status.insert(uuid.clone(), status);
+            };
         };
-        subjects.push((Position { x, y: 0 }, subject));
-    }
-
-    // Two vertical aisles that split left/middle/right as 2/4/2 seat columns.
-    for y in 1..ROW_COUNT 
-    {
-        subjects.push((Position { x: 2, y }, Subject::Transparent));
-        subjects.push((Position { x: 7, y }, Subject::Transparent));
-    }
-
-    let mut student_index = 0u32;
-    for y in 1..ROW_COUNT {
-        for &x in &SEAT_COLUMNS {
-            if student_index < STUDENT_COUNT {
-                subjects.push((
-                    Position { x, y },
-                    Subject::Some(format!("Student {:02}", student_index)),
-                ));
-                student_index += 1;
-            } else {
-                subjects.push((Position { x, y }, Subject::Transparent));
-            }
-        }
-    }
-
-    Table::new(ROW_COUNT, COLUMN_COUNT, subjects)
+    };
+    return result;
 }
