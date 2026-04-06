@@ -1,2 +1,2 @@
-mod view;
-mod component;
+pub mod view;
+pub mod component;

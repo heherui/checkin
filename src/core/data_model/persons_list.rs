@@ -1,3 +1,4 @@
+use gtk4::gdk::Display;
 use serde::{Deserialize, Serialize};
 
 use crate::core::data_model::Person;
@@ -19,7 +20,7 @@ pub struct  PersonListEntry
     pub person:Person,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Position
 {
     pub x:u32,
@@ -53,5 +54,13 @@ impl PersonsList
         {
             self.persons.push(entry);
         }
+    }
+}
+
+impl std::fmt::Display for Position 
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result 
+    {
+        return write!(f, "(x={},y={})", self.x, self.y);
     }
 }
