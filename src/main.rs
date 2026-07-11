@@ -1,9 +1,10 @@
+pub mod storage;
+pub mod table_layout;
 mod ui;
-mod core;
 
 mod utilities;
 
 fn main()-> iced::Result
 {
-    return ui::App::new().run();
+    ui::run()
 }

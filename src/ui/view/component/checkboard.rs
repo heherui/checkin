@@ -5,19 +5,16 @@ use iced::{
         text,
     },
     alignment,
-    Background, Color, Element,
-    Pixels, Point, Rectangle, Size,
+    border::Radius,
+    Background, Border, Color, Element, Pixels, Point, Rectangle, Size,
 };
 
-use crate::ui::message::Message;
+use crate::{storage::TableData, ui::message::Message};
 
-pub fn checkboard<'a>() -> Element<'a, Message>
+pub fn checkboard<'a>(table_view_model: Option<&'a TableViewModel>) -> Element<'a, Message>
 {
     Table {
-        data: &TableData {
-            row_count: 8,
-            column_count: 10,
-        },
+        view_model: table_view_model,
     }
     .into()
 }
@@ -25,11 +22,11 @@ pub fn checkboard<'a>() -> Element<'a, Message>
 #[derive(Debug)]
 pub struct Table<'a>
 {
-    data: &'a TableData,
+    view_model: Option<&'a TableViewModel>,
 }
 
 #[derive(Debug)]
-pub struct TableData
+pub struct TableViewModel
 {
     row_count: u32,
     column_count: u32,
@@ -68,8 +65,46 @@ where
     {
         let bounds = layout.bounds();
 
-        let row_count = self.data.row_count;
-        let column_count = self.data.column_count;
+        let view_model = match self.view_model {
+            Some(view_model) => view_model,
+            None => {
+                renderer.fill_quad(
+                    Quad {
+                        bounds,
+                        border: Border {
+                            color: Color::from_rgb(1.0, 0.0, 0.0),
+                            width: 2.0,
+                            radius: Radius::default(),
+                        },
+                        ..Quad::default()
+                    },
+                    Color::from_rgb(0.0, 1.0, 0.0),
+                );
+                renderer.fill_text(
+                    text::Text {
+                        content: "import table data to show the table".into(),
+                        bounds: bounds.size(),
+                        size: Pixels(24.0),
+                        line_height: Default::default(),
+                        font: Render::Font::default(),
+                        align_x: alignment::Horizontal::Center.into(),
+                        align_y: alignment::Vertical::Center,
+                        shaping: text::Shaping::Basic,
+                        wrapping: text::Wrapping::None,
+                    },
+                    Point::new(
+                        bounds.x + bounds.width / 2.0,
+                        bounds.y + bounds.height / 2.0,
+                    ),
+                    Color::BLACK,
+                    bounds,
+                );
+                return;
+            }
+        };
+
+        let row_count = view_model.row_count;
+        let column_count = view_model.column_count;
 
         let cell_size = Size::new(
             bounds.width / column_count as f32,
@@ -85,6 +120,7 @@ where
                     height: cell_size.height,
                 };
 
+                let scale = |v: f32| 0.25 + v * 0.5;
                 renderer.fill_quad(
                     Quad {
                         bounds: cell_bounds,
@@ -93,9 +129,9 @@ where
                         snap: false,
                     },
                     Background::Color(Color::from_rgb(
-                        x as f32 / column_count as f32,
-                        y as f32 / row_count as f32,
-                        ((x + y) as f32) / (row_count + column_count) as f32,
+                        scale(x as f32 / column_count as f32),
+                        scale(y as f32 / row_count as f32),
+                        scale((x + y) as f32 / (row_count + column_count) as f32),
                     )),
                 );
 
@@ -117,19 +153,6 @@ where
                 );
             }
         }
-
-        // renderer.fill_quad(
-        //     Quad {
-        //         bounds,
-        //         border: Border {
-        //             color: Color::from_rgb(1.0, 0.0, 0.0),
-        //             width: 2.0,
-        //             radius: Radius::default(),
-        //         },
-        //         ..Quad::default()
-        //     },
-        //     Color::from_rgb(0.0, 1.0, 0.0),
-        // );
     }
 }
 
@@ -141,5 +164,17 @@ where
     fn from(table: Table<'a>) -> Self
     {
         Self::new(table)
+    }
+}
+
+impl TableViewModel
+{
+    pub fn load_from(table_data: TableData) -> Self
+    {
+        Self {
+            row_count: table_data.table_layout.row_count,
+
+            column_count: table_data.table_layout.column_count,
+        }
     }
 }

@@ -1,52 +1,28 @@
 use iced::Size;
 
-use crate::ui::view::screen::main_screen::main_screen;
+use crate::{storage::STORAGE, ui::{app_state::AppState, view::{component::checkboard::TableViewModel, screen::main_screen::main_screen}}};
 
 #[allow(unused)]
-pub static APP_ID:&'static str = "io.github.andeibuite.checkin";
+pub static APP_ID: &str = "io.github.andeibuite.checkin";
 
-pub struct App
+pub fn run() -> iced::Result
 {
-    
-}
+    iced::application(
+        || {
+            let table_view_model = STORAGE
+                .load_table_data()
+                .ok()
+                .map(TableViewModel::load_from);
 
-impl App 
-{
-    pub fn new()-> Self
-    {
-        Self {  }
-    }
-}
-
-impl App 
-{
-    pub fn run(&self)-> iced::Result
-    {
-        let inner_app = iced::application(
-            AppState::default,
-            crate::ui::update::update,
-            main_screen
-        )   
-        .title("Checkin")
-        //.theme(|_| {MinimalTheme})
-        .window_size(Size::new(900.0, 600.0));
-
-        inner_app.run()
-    }
-}
-
-#[derive(Debug)]
-pub struct AppState
-{
-    pub show_checkin_dialog:bool
-}
-
-impl AppState 
-{
-    pub fn default()-> Self
-    {
-        Self { 
-            show_checkin_dialog: false
-        }
-    }
+            AppState {
+                show_checkin_dialog: false,
+                table_view_model,
+            }
+        },
+        crate::ui::update::update,
+        main_screen,
+    )
+    .title("Checkin")
+    .window_size(Size::new(900.0, 600.0))
+    .run()
 }

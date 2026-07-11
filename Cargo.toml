@@ -3,20 +3,15 @@ name = "checkin"
 version = "0.1.0"
 edition = "2021"
 
-# [dependencies]
-# gtk4 = "0.7"
-# chrono = "0.4.44"
-# serde = { version = "1.0", features = ["derive"] }
-# serde_json = "1.0"
-# rand = "0.8"
-# atomic-write-file = "0.3.0"
-# uuid = { version = "1.8", features = ["v4", "serde"] }
-
 [dependencies]
 iced = { version = "0.14", features = ["tokio", "advanced"] }
 chrono = "0.4"
 anyhow = "1"
 tokio = "1.52"
+serde = { version = "1.0", features = ["derive"]}
+uuid = { version = "1.23.4", features = ["serde"]}
+toml = "0.9"
+dirs = "6"
 
 [package.metadata.scripts]
 run = "cargo run"

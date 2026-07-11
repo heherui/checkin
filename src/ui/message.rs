@@ -1,13 +1,28 @@
 use chrono::NaiveDateTime;
 
+use crate::storage::TableData;
+
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub enum Message 
 {
     ShowCheckinDialog,
     CloseCheckinDialog,
 
-    ConfirmCheckin { 
+    LoadTableData,
+    LoadTableDataResult {
+        result: Result<TableData, String>,
+    },
+
+    SaveTableData {
+        data: TableData,
+    },
+    SaveTableDataResult {
+        result: Result<(), String>,
+    },
+
+    ConfirmCheckin {
         id: i32,
         time: NaiveDateTime,
-    }
+    },
 }

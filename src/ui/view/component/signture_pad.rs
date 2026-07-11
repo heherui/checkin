@@ -67,7 +67,7 @@ where
                 },
                 ..Quad::default()
             },
-            Color::from_rgb(0.0, 1.0, 0.0),
+            Color::TRANSPARENT,
         );
     }
 }

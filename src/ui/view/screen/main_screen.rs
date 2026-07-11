@@ -5,7 +5,7 @@ use iced::{
 };
 
 use crate::ui::{
-    app::AppState,
+    app_state::AppState,
     message::Message,
     view::component::{
         checkboard::checkboard, checkin_dialog::checkin_dialog, statistics::statistics,
@@ -15,17 +15,22 @@ use crate::ui::{
 pub fn main_screen(app_state: &AppState) -> Element<'_, Message>
 {
     let statistics = statistics();
-    let checkboard = checkboard();
+    let checkboard = checkboard(app_state.table_view_model.as_ref());
     let developer_inspector = row![
-        button("ShowCheckinDialog")
-            .on_press(Message::ShowCheckinDialog),
-    ];
+        button("ShowCheckinDialog").on_press(Message::ShowCheckinDialog),
+        button("SaveToConfig"),
+        button("LoadFromConfig"),
+        button("CopyStatistics"),
+    ].spacing(3);
 
     let root = container(column![
-        container(statistics).max_height(200),
-        container(developer_inspector).max_height(50),
+        container(row![
+            container(statistics),
+            container(developer_inspector),
+        ])
+        .max_height(200),
         container(checkboard),
-    ])
+    ].spacing(3))
     .padding(10)
     .width(Fill)
     .height(Fill);
@@ -42,7 +47,7 @@ pub fn main_screen(app_state: &AppState) -> Element<'_, Message>
                     width: 1.0,
                     radius: 8.0.into(),
                     // color: Color::from_rgb8(200, 200, 200),
-                    color: theme.palette().primary
+                    color: theme.palette().primary,
                 },
 
                 ..Default::default()
