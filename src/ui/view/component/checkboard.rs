@@ -1,5 +1,3 @@
-use std::cell;
-
 use iced::{
     advanced::{
         layout::Node,
@@ -7,11 +5,7 @@ use iced::{
         text,
     },
     alignment,
-    border::{self, Radius},
-    futures::channel::oneshot::Receiver,
-    widget::{container, grid, stack},
-    Background, Border, Color, Element, Font,
-    Length::Fill,
+    Background, Color, Element,
     Pixels, Point, Rectangle, Size,
 };
 
@@ -53,8 +47,8 @@ where
 
     fn layout(
         &mut self,
-        tree: &mut iced::advanced::widget::Tree,
-        renderer: &Render,
+        _tree: &mut iced::advanced::widget::Tree,
+        _renderer: &Render,
         limits: &iced::advanced::layout::Limits,
     ) -> iced::advanced::layout::Node
     {
@@ -63,13 +57,13 @@ where
 
     fn draw(
         &self,
-        tree: &iced::advanced::widget::Tree,
+        _tree: &iced::advanced::widget::Tree,
         renderer: &mut Render,
-        theme: &Theme,
-        style: &iced::advanced::renderer::Style,
+        _theme: &Theme,
+        _style: &iced::advanced::renderer::Style,
         layout: iced::advanced::Layout<'_>,
-        cursor: iced::advanced::mouse::Cursor,
-        viewport: &iced::Rectangle,
+        _cursor: iced::advanced::mouse::Cursor,
+        _viewport: &iced::Rectangle,
     )
     {
         let bounds = layout.bounds();

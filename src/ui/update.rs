@@ -17,6 +17,7 @@ pub fn update(app_state: &mut AppState, message: Message) -> Task<Message>
             Task::none()
         }
         Message::ConfirmCheckin { id, time } => {
+            println!("Confirm Checkin: id:{id}, time:{time}");
             Task::perform(storage::save_checkin(), |_| Message::CloseCheckinDialog)
         }
     }

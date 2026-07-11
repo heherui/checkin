@@ -6,7 +6,7 @@ use iced::{
     border::Radius,
     widget::{container, stack, text},
     Border, Color, Element,
-    Length::{Fill, Shrink},
+    Length::Fill,
     Size,
 };
 
@@ -35,8 +35,8 @@ where
 
     fn layout(
         &mut self,
-        tree: &mut iced::advanced::widget::Tree,
-        renderer: &Render,
+        _tree: &mut iced::advanced::widget::Tree,
+        _renderer: &Render,
         limits: &iced::advanced::layout::Limits,
     ) -> iced::advanced::layout::Node
     {
@@ -46,13 +46,13 @@ where
 
     fn draw(
         &self,
-        tree: &iced::advanced::widget::Tree,
+        _tree: &iced::advanced::widget::Tree,
         renderer: &mut Render,
-        theme: &Theme,
-        style: &iced::advanced::renderer::Style,
+        _theme: &Theme,
+        _style: &iced::advanced::renderer::Style,
         layout: iced::advanced::Layout<'_>,
-        cursor: iced::advanced::mouse::Cursor,
-        viewport: &iced::Rectangle,
+        _cursor: iced::advanced::mouse::Cursor,
+        _viewport: &iced::Rectangle,
     )
     {
         let bounds = layout.bounds();
