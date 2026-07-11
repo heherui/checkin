@@ -2,7 +2,7 @@ use iced::Task;
 
 use crate::{
     core::storage,
-    gui::{app::AppState, message::Message},
+    ui::{app::AppState, message::Message},
 };
 
 pub fn update(app_state: &mut AppState, message: Message) -> Task<Message>

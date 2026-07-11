@@ -1,6 +1,6 @@
 use iced::Size;
 
-use crate::gui::view::screen::main_screen::main_screen;
+use crate::ui::view::screen::main_screen::main_screen;
 
 #[allow(unused)]
 pub static APP_ID:&'static str = "io.github.andeibuite.checkin";
@@ -24,7 +24,7 @@ impl App
     {
         let inner_app = iced::application(
             AppState::default,
-            crate::gui::update::update,
+            crate::ui::update::update,
             main_screen
         )   
         .title("Checkin")

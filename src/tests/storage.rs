@@ -1,6 +1,6 @@
 use crate::core::persistence::{AppPaths, Storage};
 
- #[test]
+#[test]
 fn test_atomic_write() 
 {
     let path = &AppPaths::CacheFile{ filename:String::from("test_atomic_write") };

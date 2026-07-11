@@ -428,6 +428,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "iced",
+ "tokio",
 ]
 
 [[package]]

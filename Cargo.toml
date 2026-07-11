@@ -13,6 +13,14 @@ edition = "2021"
 # uuid = { version = "1.8", features = ["v4", "serde"] }
 
 [dependencies]
-iced = { version = "0.14", features = ["tokio"] }
-chrono = "0.4.44"
-anyhow = "1.0"
+iced = { version = "0.14", features = ["tokio", "advanced"] }
+chrono = "0.4"
+anyhow = "1"
+tokio = "1.52"
+
+[package.metadata.scripts]
+run = "cargo run"
+build-debug = "cargo build"
+build-release = "cargo build --release"
+test = "cargo test -- --nocapture"
+clean = "cargo clean"
