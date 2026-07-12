@@ -26,7 +26,7 @@ impl Storage
                 let id: u64 = (((x - 1) * row_count) + y) as u64;
                 personnel.push(Person {
                     id,
-                    name: String::from(format!("Person({x},{y})")),
+                    name: random_name::random_chinese_name()
                 });
                 seats_assignment.push(SeatAssignment {
                     coordinate: TableCoordinate { x, y },
@@ -90,6 +90,7 @@ use std::fs;
 
 use crate::storage::{AppBehaviorSettings, AppConfig, Person, TableCoordinate, TableData, TableLayout, path_provider};
 use crate::storage::data_models::table_persistent::SeatAssignment;
+use crate::utilities::random_name;
 
 // parivate api
 impl Storage

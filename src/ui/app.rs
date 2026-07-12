@@ -1,9 +1,18 @@
-use iced::Size;
+use iced::{Font, Size};
 
 use crate::{storage::STORAGE, ui::{app_state::AppState, view::{component::checkboard::TableViewModel, screen::main_screen::main_screen}}};
 
 #[allow(unused)]
 pub static APP_ID: &str = "io.github.andeibuite.checkin";
+
+#[cfg(target_os = "macos")]
+pub const APP_FONT: Font = Font::with_name("PingFang SC");
+
+#[cfg(target_os = "windows")]
+pub const APP_FONT: Font = Font::with_name("Microsoft YaHei");
+
+#[cfg(target_os = "linux")]
+pub const APP_FONT: Font = Font::with_name("Noto Sans CJK SC");
 
 pub fn run() -> iced::Result
 {
@@ -17,11 +26,13 @@ pub fn run() -> iced::Result
             AppState {
                 show_checkin_dialog: false,
                 table_view_model,
+                statistics_view_model: None,
             }
         },
         crate::ui::update::update,
         main_screen,
     )
+    .default_font(APP_FONT)
     .title("Checkin")
     .window_size(Size::new(900.0, 600.0))
     .run()

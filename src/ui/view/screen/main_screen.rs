@@ -1,37 +1,29 @@
 use iced::{
-    widget::{button, column, container, row, stack},
+    widget::{column, container, stack},
     Background, Color, Element,
     Length::Fill,
 };
 
 use crate::ui::{
-    app_state::AppState,
-    message::Message,
-    view::component::{
-        checkboard::checkboard, checkin_dialog::checkin_dialog, statistics::statistics,
+    app_state::AppState, message::Message, view::component::{
+        checkboard::checkboard, checkin_dialog::checkin_dialog, developer_inspector::developer_inspector, statistics::statistics,
     },
 };
 
 pub fn main_screen(app_state: &AppState) -> Element<'_, Message>
 {
-    let statistics = statistics();
+    let statistics = statistics(app_state.statistics_view_model.as_ref());
+    let developer_inspector = developer_inspector();
     let checkboard = checkboard(app_state.table_view_model.as_ref());
-    let developer_inspector = row![
-        button("ShowCheckinDialog").on_press(Message::ShowCheckinDialog),
-        button("SaveToConfig"),
-        button("LoadFromConfig"),
-        button("importXlsx").on_press(Message::ImportTableDataFromExcel),
-        button("CopyStatistics"),
-    ].spacing(3);
 
-    let root = container(column![
-        container(row![
-            container(statistics),
-            container(developer_inspector),
-        ])
-        .max_height(200),
-        container(checkboard),
-    ].spacing(3))
+    let root = container(
+        column![
+            container(statistics).height(100),
+            container(developer_inspector).height(50),
+            container(checkboard),
+        ]
+        .spacing(3),
+    )
     .padding(10)
     .width(Fill)
     .height(Fill);

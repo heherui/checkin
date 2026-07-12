@@ -1,22 +1,23 @@
 use iced::{
-    advanced::{
-        layout::Node,
-        renderer::{self, Quad},
-        text,
-    },
+    advanced::{layout::Node, renderer::Quad, text},
     alignment,
     border::Radius,
-    Background, Border, Color, Element, Pixels, Point, Rectangle, Size,
+    Background, Border, Color, Element, Font, Pixels, Point, Rectangle, Size,
 };
 
 use crate::{
-    storage::{PersonId, TableData}, ui::message::Message,
+    storage::{PersonId, TableData}, ui::{app::APP_FONT, message::Message},
 };
 
 pub fn checkboard<'a>(table_view_model: Option<&'a TableViewModel>) -> Element<'a, Message>
 {
     Table {
         view_model: table_view_model,
+        style: TableStyle { 
+            font: APP_FONT, 
+            text_size: Pixels(16.0),
+            shapping: text::Shaping::Advanced,
+        }
     }
     .into()
 }
@@ -25,6 +26,7 @@ pub fn checkboard<'a>(table_view_model: Option<&'a TableViewModel>) -> Element<'
 pub struct Table<'a>
 {
     view_model: Option<&'a TableViewModel>,
+    style: TableStyle,
 }
 
 #[derive(Debug)]
@@ -41,10 +43,17 @@ pub struct TableCellViewModel
     label: String,
 }
 
+#[derive(Debug)]
+pub struct TableStyle
+{
+    pub font: Font,
+    pub text_size: Pixels,
+    pub shapping: text::Shaping,
+}
+
 impl<'a, Message, Theme, Render> iced::advanced::Widget<Message, Theme, Render> for Table<'a>
 where
-    Render: iced::advanced::Renderer + text::Renderer,
-    Render::Font: Default,
+    Render: iced::advanced::Renderer + text::Renderer + text::Renderer<Font = iced::Font>,
 {
     fn size(&self) -> iced::Size<iced::Length>
     {
@@ -85,8 +94,7 @@ impl<'a> Table<'a>
 {
     fn draw_empty_view<Render>(&self, renderer: &mut Render, layout: iced::advanced::Layout<'_>)
     where
-        Render: iced::advanced::Renderer + text::Renderer,
-        Render::Font: Default,
+        Render: iced::advanced::Renderer + text::Renderer + text::Renderer<Font = iced::Font>,
     {
         let bounds = layout.bounds();
 
@@ -130,8 +138,7 @@ impl<'a> Table<'a>
         layout: iced::advanced::Layout<'_>,
         view_model: &'a TableViewModel,
     ) where
-        Render: iced::advanced::Renderer + text::Renderer,
-        Render::Font: Default,
+        Render: iced::advanced::Renderer + text::Renderer + text::Renderer<Font = iced::Font>,
     {
         let bounds = layout.bounds();
 
@@ -152,31 +159,36 @@ impl<'a> Table<'a>
                     height: cell_size.height,
                 };
 
-                let scale = |v: f32| 0.25 + v * 0.5;
+                //let scale = |v: f32| 0.25 + v * 0.5;
                 renderer.fill_quad(
                     Quad {
                         bounds: cell_bounds,
-                        border: Default::default(),
+                        border: Border {
+                            width: 2.0,
+                            radius: 0.0.into(),
+                            color: Color::from_rgb8(231, 103, 103),
+                        },
                         shadow: Default::default(),
                         snap: false,
                     },
-                    Background::Color(Color::from_rgb(
-                        scale(x as f32 / column_count as f32),
-                        scale(y as f32 / row_count as f32),
-                        scale((x + y) as f32 / (row_count + column_count) as f32),
-                    )),
+                    // Background::Color(Color::from_rgb(
+                    //     scale(x as f32 / column_count as f32),
+                    //     scale(y as f32 / row_count as f32),
+                    //     scale((x + y) as f32 / (row_count + column_count) as f32),
+                    // )),
+                    Background::Color(Color::from_rgb8(222, 145, 145)),
                 );
 
                 renderer.fill_text(
-                    text::Text {
+                    text::Text { 
                         content: cell.label.clone(),
                         bounds: Size::new(cell_size.width, cell_size.height),
-                        size: Pixels(14.0),
+                        size: self.style.text_size,
                         line_height: Default::default(),
-                        font: Render::Font::default(),
+                        font: self.style.font,
                         align_x: alignment::Horizontal::Center.into(),
                         align_y: alignment::Vertical::Center,
-                        shaping: text::Shaping::Basic,
+                        shaping: self.style.shapping,
                         wrapping: text::Wrapping::None,
                     },
                     Point::new(cell_bounds.center_x(), cell_bounds.center_y()),
@@ -190,8 +202,7 @@ impl<'a> Table<'a>
 
 impl<'a, Message, Theme, Renderer> From<Table<'a>> for Element<'a, Message, Theme, Renderer>
 where
-    Renderer: renderer::Renderer + text::Renderer,
-    Renderer::Font: Default,
+    Renderer: iced::advanced::Renderer + text::Renderer + text::Renderer<Font = iced::Font>,
 {
     fn from(table: Table<'a>) -> Self
     {
