@@ -10,8 +10,7 @@ use iced::{
 };
 
 use crate::{
-    storage::{PersonId, TableData},
-    ui::message::Message,
+    storage::{PersonId, TableData}, ui::message::Message,
 };
 
 pub fn checkboard<'a>(table_view_model: Option<&'a TableViewModel>) -> Element<'a, Message>

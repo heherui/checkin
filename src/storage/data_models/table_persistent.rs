@@ -1,6 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-use crate::storage::PersonId;
+use crate::storage::data_models::personnel::{Person, PersonId};
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct TableData
+{
+    pub personnel: Vec<Person>,
+    pub table_layout: TableLayout,
+}
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct TableLayout

@@ -1,9 +1,4 @@
 use std::path::PathBuf;
-
-use crate::storage::datamodel::{AppBehaviorSettings, AppConfig, Person};
-use crate::storage::{path_provider, TableData};
-use crate::table_layout::{SeatAssignment, TableCoordinate, TableLayout};
-
 use std::sync::LazyLock;
 
 pub static STORAGE: LazyLock<Storage> = LazyLock::new(Storage::new);
@@ -92,6 +87,9 @@ impl Storage
 }
 
 use std::fs;
+
+use crate::storage::{AppBehaviorSettings, AppConfig, Person, TableCoordinate, TableData, TableLayout, path_provider};
+use crate::storage::data_models::table_persistent::SeatAssignment;
 
 // parivate api
 impl Storage
