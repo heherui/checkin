@@ -19,7 +19,7 @@ pub fn main_screen(app_state: &AppState) -> Element<'_, Message>
     let root = container(
         column![
             container(statistics).height(100),
-            container(developer_inspector).height(50),
+            container(developer_inspector).height(60),
             container(checkboard),
         ]
         .spacing(3),

@@ -1,31 +1,36 @@
-use iced::{Element, Length::Fill, widget::{button, container, row, svg}};
+use iced::{
+    Alignment, Background, Border, Color, Element, Length::Fill, widget::{container, row},
+};
 
-use crate::ui::message::Message;
+use crate::ui::{message::Message, view::component::plain_button::plain_button};
 
-pub fn developer_inspector<'a>()-> Element<'a,Message>
+pub fn developer_inspector<'a>() -> Element<'a, Message>
 {
-    let show_dialog_icon = svg("./resources/dialog.svg");
-    let save_to_config_icon = svg("./resources/save.svg");
-    let load_from_config_icon = svg("./resources/load.svg");
-    let import_from_excel_icon = svg("./resources/import.svg");
-    let copy_icon = svg("./resources/copy.svg");
-    let send_to_qq_icon = svg("./resources/qq.svg");
-
     let buttons = row![
-        button(show_dialog_icon).on_press(Message::ShowCheckinDialog),
-        button(save_to_config_icon),
-        button(load_from_config_icon),
-        button(import_from_excel_icon).on_press(Message::ImportTableDataFromExcel),
-        button(copy_icon),
-        button(send_to_qq_icon),
+        plain_button("dev:show_dialog").on_press(Message::ShowCheckinDialog),
+        plain_button("Save Config"),
+        plain_button("Load Config"),
+        plain_button("Import .xlsx").on_press(Message::ImportTableDataFromExcel),
+        plain_button("Copy Statistics"),
+        plain_button("Send to QQ"),
     ]
-    .spacing(3)
-    .padding(1)
-    .width(Fill)
-    .height(Fill);
+    .align_y(Alignment::Center)
+    .spacing(10)
+    .padding(8);
 
     container(buttons)
+        .padding(5)
+        .style(|_| container::Style {
+            background: Some(Background::Color(Color::from_rgb8(245, 247, 250))),
+
+            border: Border {
+                width: 1.0,
+                radius: 12.0.into(),
+                color: Color::from_rgba8(0, 0, 0, 0.08),
+            },
+
+            ..Default::default()
+        })
         .width(Fill)
-        .height(Fill)
         .into()
 }

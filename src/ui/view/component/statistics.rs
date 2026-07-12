@@ -1,6 +1,9 @@
 use iced::{
-    widget::{column, row, text},
-    Element,
+    alignment::Horizontal::Left,
+    font,
+    widget::{column, container, row, text},
+    Background, Border, Color, Element,
+    Length::Fill,
 };
 
 use crate::ui::message::Message;
@@ -8,17 +11,39 @@ use crate::ui::message::Message;
 pub fn statistics<'a>(vm: Option<&'a StatisticsViewModel>) -> Element<'a, Message>
 {
     let vm = vm.unwrap_or(&ZERO_STATISTICS_VIEW_MODEL);
+    let medium_weight_font = font::Font {
+        weight: font::Weight::Medium,
+        ..font::Font::DEFAULT
+    };
 
-    column![
-        text(&vm.remain_time).size(42),
-        text(format!("{:.1}% 已完成签到", vm.percentage)).size(20),
-        row![
-            text(format!("已签到 {}", vm.checked)),
-            text(format!("未签到 {}", vm.unchecked)),
-            text(format!("请假 {}", vm.leave)),
+    container(
+        column![
+            text(&vm.remain_time).size(20),
+            row![
+                row![text("已签到:"), text(vm.checked).font(medium_weight_font)].spacing(1),
+                text("·"),
+                row![text("未签到:"), text(vm.unchecked).font(medium_weight_font)].spacing(1),
+                text("·"),
+                row![text("请假:"), text(vm.leave).font(medium_weight_font)].spacing(1),
+            ]
+            .spacing(8),
         ]
-        .spacing(20),
-    ]
+        .spacing(8)
+        .align_x(Left),
+    )
+    .width(Fill)
+    .padding(20)
+    .style(|_| container::Style {
+        background: Some(Background::Color(Color::from_rgb8(245, 248, 252))),
+
+        border: Border {
+            radius: 16.0.into(),
+            width: 0.0,
+            color: Color::TRANSPARENT,
+        },
+
+        ..Default::default()
+    })
     .into()
 }
 
