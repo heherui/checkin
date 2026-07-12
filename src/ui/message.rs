@@ -21,6 +21,8 @@ pub enum Message
         result: Result<(), String>,
     },
 
+    ImportTableDataFromExcel,
+
     ConfirmCheckin {
         id: i32,
         time: NaiveDateTime,

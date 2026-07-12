@@ -9,7 +9,10 @@ use iced::{
     Background, Border, Color, Element, Pixels, Point, Rectangle, Size,
 };
 
-use crate::{storage::TableData, ui::message::Message};
+use crate::{
+    storage::{PersonId, TableData},
+    ui::message::Message,
+};
 
 pub fn checkboard<'a>(table_view_model: Option<&'a TableViewModel>) -> Element<'a, Message>
 {
@@ -30,6 +33,13 @@ pub struct TableViewModel
 {
     row_count: u32,
     column_count: u32,
+    rows: Vec<Vec<TableCellViewModel>>,
+}
+
+#[derive(Debug)]
+pub struct TableCellViewModel
+{
+    label: String,
 }
 
 impl<'a, Message, Theme, Render> iced::advanced::Widget<Message, Theme, Render> for Table<'a>
@@ -63,45 +73,68 @@ where
         _viewport: &iced::Rectangle,
     )
     {
+        if let Some(view_model) = self.view_model {
+            self.draw_table_view(renderer, layout, view_model);
+        } else {
+            self.draw_empty_view(renderer, layout);
+        }
+    }
+}
+
+// private drawing helpers
+impl<'a> Table<'a>
+{
+    fn draw_empty_view<Render>(&self, renderer: &mut Render, layout: iced::advanced::Layout<'_>)
+    where
+        Render: iced::advanced::Renderer + text::Renderer,
+        Render::Font: Default,
+    {
         let bounds = layout.bounds();
 
-        let view_model = match self.view_model {
-            Some(view_model) => view_model,
-            None => {
-                renderer.fill_quad(
-                    Quad {
-                        bounds,
-                        border: Border {
-                            color: Color::from_rgb(1.0, 0.0, 0.0),
-                            width: 2.0,
-                            radius: Radius::default(),
-                        },
-                        ..Quad::default()
-                    },
-                    Color::from_rgb(0.0, 1.0, 0.0),
-                );
-                renderer.fill_text(
-                    text::Text {
-                        content: "import table data to show the table".into(),
-                        bounds: bounds.size(),
-                        size: Pixels(24.0),
-                        line_height: Default::default(),
-                        font: Render::Font::default(),
-                        align_x: alignment::Horizontal::Center.into(),
-                        align_y: alignment::Vertical::Center,
-                        shaping: text::Shaping::Basic,
-                        wrapping: text::Wrapping::None,
-                    },
-                    Point::new(
-                        bounds.x + bounds.width / 2.0,
-                        bounds.y + bounds.height / 2.0,
-                    ),
-                    Color::BLACK,
-                    bounds,
-                );
-                return;
-            }
-        };
+        renderer.fill_quad(
+            Quad {
+                bounds,
+                border: Border {
+                    color: Color::from_rgb(1.0, 0.0, 0.0),
+                    width: 2.0,
+                    radius: Radius::default(),
+                },
+                ..Quad::default()
+            },
+            Color::from_rgb(0.0, 1.0, 0.0),
+        );
+        renderer.fill_text(
+            text::Text {
+                content: "import table data to show the table".into(),
+                bounds: bounds.size(),
+                size: Pixels(24.0),
+                line_height: Default::default(),
+                font: Render::Font::default(),
+                align_x: alignment::Horizontal::Center.into(),
+                align_y: alignment::Vertical::Center,
+                shaping: text::Shaping::Basic,
+                wrapping: text::Wrapping::None,
+            },
+            Point::new(
+                bounds.x + bounds.width / 2.0,
+                bounds.y + bounds.height / 2.0,
+            ),
+            Color::BLACK,
+            bounds,
+        );
+        return;
+    }
+
+    fn draw_table_view<Render>(
+        &self,
+        renderer: &mut Render,
+        layout: iced::advanced::Layout<'_>,
+        view_model: &'a TableViewModel,
+    ) where
+        Render: iced::advanced::Renderer + text::Renderer,
+        Render::Font: Default,
+    {
+        let bounds = layout.bounds();
 
         let row_count = view_model.row_count;
         let column_count = view_model.column_count;
@@ -111,8 +144,8 @@ where
             bounds.height / row_count as f32,
         );
 
-        for x in 0..column_count {
-            for y in 0..row_count {
+        for (y, row) in view_model.rows.iter().enumerate() {
+            for (x, cell) in row.iter().enumerate() {
                 let cell_bounds = Rectangle {
                     x: bounds.x + cell_size.width * x as f32,
                     y: bounds.y + cell_size.height * y as f32,
@@ -137,7 +170,7 @@ where
 
                 renderer.fill_text(
                     text::Text {
-                        content: format!("{x},{y}"),
+                        content: cell.label.clone(),
                         bounds: Size::new(cell_size.width, cell_size.height),
                         size: Pixels(14.0),
                         line_height: Default::default(),
@@ -167,14 +200,48 @@ where
     }
 }
 
+use std::collections::HashMap;
+
 impl TableViewModel
 {
     pub fn load_from(table_data: TableData) -> Self
     {
-        Self {
-            row_count: table_data.table_layout.row_count,
+        let row_count = table_data.table_layout.row_count;
+        let column_count = table_data.table_layout.column_count;
 
-            column_count: table_data.table_layout.column_count,
+        let mut rows = Vec::with_capacity(row_count as usize);
+        for _ in 0..row_count {
+            let mut row = Vec::with_capacity(column_count as usize);
+            for _ in 0..column_count {
+                row.push(TableCellViewModel {
+                    label: String::new(),
+                });
+            }
+            rows.push(row);
+        }
+
+        let person_map: HashMap<PersonId, &str> = table_data
+            .personnel
+            .iter()
+            .map(|p| (p.id, p.name.as_str()))
+            .collect();
+
+        // Fill cells that have a seat assignment
+        for assignment in table_data.table_layout.seats_assignment {
+            let x = assignment.coordinate.x.saturating_sub(1) as usize;
+            let y = assignment.coordinate.y.saturating_sub(1) as usize;
+
+            if y < rows.len() && x < rows[y].len() {
+                if let Some(name) = person_map.get(&assignment.person_id) {
+                    rows[y][x].label = name.to_string();
+                }
+            }
+        }
+
+        TableViewModel {
+            row_count,
+            column_count,
+            rows,
         }
     }
 }

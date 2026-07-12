@@ -82,5 +82,9 @@ pub fn update(
             // TODO
             Task::none()
         }
+        Message::ImportTableDataFromExcel => {
+            // TODO
+            Task::none()
+        },
     }
 }

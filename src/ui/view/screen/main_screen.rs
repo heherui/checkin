@@ -20,6 +20,7 @@ pub fn main_screen(app_state: &AppState) -> Element<'_, Message>
         button("ShowCheckinDialog").on_press(Message::ShowCheckinDialog),
         button("SaveToConfig"),
         button("LoadFromConfig"),
+        button("importXlsx").on_press(Message::ImportTableDataFromExcel),
         button("CopyStatistics"),
     ].spacing(3);
 

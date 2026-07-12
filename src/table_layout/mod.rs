@@ -7,7 +7,7 @@ pub struct TableLayout
 {
     pub column_count: u32,
     pub row_count: u32,
-    pub persons_mapper: Vec<SeatAssignment>,
+    pub seats_assignment: Vec<SeatAssignment>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
