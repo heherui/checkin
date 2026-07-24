@@ -1,13 +1,13 @@
 use chrono::NaiveDateTime;
 
-use crate::storage::TableData;
+use crate::{storage::TableData, ui::app::app_state::{AppDialog, ImportFormat}};
 
 #[allow(unused)]
 #[derive(Debug, Clone)]
 pub enum Message 
 {
-    ShowCheckinDialog,
-    CloseCheckinDialog,
+    ShowDialog(AppDialog),
+    CloseDialog(AppDialog),
 
     LoadTableData,
     LoadTableDataResult {
@@ -27,4 +27,8 @@ pub enum Message
         id: i32,
         time: NaiveDateTime,
     },
+
+    CopyStatistics,
+
+    SelectImportFormat(ImportFormat),
 }

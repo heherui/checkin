@@ -8,7 +8,7 @@ pub use message::Message;
 use iced::{Font, Size};
 
 use crate::{
-    storage::STORAGE, ui::{view::screen::main_screen::main_screen, widget::checkboard::TableViewModel},
+    storage::STORAGE, ui::{app::app_state::{AppDialog, ImportDialogState, ImportFormat::Xlsx}, view::{component::statistics::StatisticsViewModel, screen::main_screen::main_screen}, widget::checkboard::TableViewModel},
 };
 
 #[allow(unused)]
@@ -33,9 +33,16 @@ pub fn run() -> iced::Result
                 .map(TableViewModel::load_from);
 
             AppState {
-                show_checkin_dialog: false,
+                dialog: AppDialog::None,
                 table_view_model,
-                statistics_view_model: None,
+                statistics_view_model: Some(StatisticsViewModel {
+                    remain_time: format!("--:--:--"),
+                    percentage: 32.0,
+                    checked: 5,
+                    unchecked: 20,
+                    leave: 1,
+                }),
+                import_dialog_state: ImportDialogState { format: Xlsx },
             }
         },
         update::update,
