@@ -2,7 +2,7 @@ use iced::{
     Alignment, Background, Border, Color, Element, Length::Fill, widget::{container, row},
 };
 
-use crate::ui::{message::Message, view::component::plain_button::plain_button};
+use crate::ui::{app::Message, view::component::plain_button::plain_button};
 
 pub fn developer_inspector<'a>() -> Element<'a, Message>
 {

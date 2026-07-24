@@ -2,7 +2,7 @@ use iced::Task;
 
 use crate::{
     storage::STORAGE, ui::{
-        app_state::AppState, message::Message, view::component::checkboard::TableViewModel,
+        app::{app_state::AppState, message::Message}, widget::checkboard::TableViewModel,
     },
 };
 

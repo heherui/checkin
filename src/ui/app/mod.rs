@@ -1,11 +1,14 @@
+pub mod app_state;
+pub mod message;
+pub mod update;
+
+pub use app_state::AppState;
+pub use message::Message;
+
 use iced::{Font, Size};
 
 use crate::{
-    storage::STORAGE,
-    ui::{
-        app_state::AppState,
-        view::{component::checkboard::TableViewModel, screen::main_screen::main_screen},
-    },
+    storage::STORAGE, ui::{view::screen::main_screen::main_screen, widget::checkboard::TableViewModel},
 };
 
 #[allow(unused)]
@@ -35,7 +38,7 @@ pub fn run() -> iced::Result
                 statistics_view_model: None,
             }
         },
-        crate::ui::update::update,
+        update::update,
         main_screen,
     )
     .default_font(APP_FONT)

@@ -6,7 +6,7 @@ use iced::{
     Length::Fill,
 };
 
-use crate::ui::message::Message;
+use crate::ui::app::Message;
 
 pub fn statistics<'a>(vm: Option<&'a StatisticsViewModel>) -> Element<'a, Message>
 {

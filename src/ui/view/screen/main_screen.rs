@@ -5,8 +5,10 @@ use iced::{
 };
 
 use crate::ui::{
-    app_state::AppState, message::Message, view::component::{
-        checkboard::checkboard, checkin_dialog::checkin_dialog, developer_inspector::developer_inspector, statistics::statistics,
+    app::{AppState, Message},
+    view::component::{
+        checkboard::checkboard, checkin_dialog::checkin_dialog,
+        developer_inspector::developer_inspector, statistics::statistics,
     },
 };
 

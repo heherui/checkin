@@ -3,7 +3,7 @@ use iced::{
     Element,
 };
 
-use crate::ui::{message::Message, view::component::signture_pad::signture_pad};
+use crate::ui::{app::Message, view::component::signture_pad::signture_pad};
 
 pub fn checkin_dialog<'a>() -> Element<'a, Message>
 {
