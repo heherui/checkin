@@ -1,21 +1,27 @@
 #[derive(Debug)]
 pub struct TableViewModel
 {
-    pub(crate) row_count: u32,
-    pub(crate) column_count: u32,
+    pub(crate) cell_default_width: f32,
+    pub(crate) cell_default_height: f32,
+
+    pub(crate) cell_width_offsets: Vec<f32>,
+    pub(crate) cell_height_offsets: Vec<f32>,
+
+    pub(crate) start_point: Point,
+
     pub(crate) rows: Vec<Vec<TableCellViewModel>>,
 }
-
 #[derive(Debug)]
 pub struct TableCellViewModel
 {
     pub(crate) label: String,
+    pub(crate) background_color: Color,
+    pub(crate) border_color: Option<Color>,
 }
 
-
-use std::collections::HashMap;
-
 use crate::storage::{PersonId, TableData};
+use iced::{Color, Point};
+use std::collections::HashMap;
 
 impl TableViewModel
 {
@@ -30,6 +36,8 @@ impl TableViewModel
             for _ in 0..column_count {
                 row.push(TableCellViewModel {
                     label: String::new(),
+                    background_color: Color::from_rgb8(222, 145, 145),
+                    border_color: Some(Color::from_rgb8(231, 103, 103))
                 });
             }
             rows.push(row);
@@ -53,10 +61,19 @@ impl TableViewModel
             }
         }
 
+        let mut cell_width_offsets = vec![0.0; row_count as usize - 1];
+        let mut cell_height_offsets = vec![0.0; column_count as usize - 1];
+
+        cell_width_offsets[2] = 50.0;
+        cell_height_offsets[2] = 50.0;
+
         TableViewModel {
-            row_count,
-            column_count,
             rows,
+            start_point: Point { x: 0.0, y: 0.0 },
+            cell_default_width: 80.0,
+            cell_default_height: 50.0,
+            cell_width_offsets,
+            cell_height_offsets,
         }
     }
 }

@@ -15,6 +15,7 @@ pub enum AppDialog
     None,
     Checkin,
     Import,
+    Settings,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

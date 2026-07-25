@@ -1,13 +1,13 @@
 use iced::{
-    Alignment, Background, Border, Color, Element, Length::Fill, widget::{container, row},
+    widget::{container, row, scrollable},
+    Alignment, Background, Border, Color, Element,
+    Length::Fill,
 };
 
 use crate::ui::{
     app::{
-        app_state::AppDialog::{Checkin, Import},
-        Message,
-    },
-    view::component::plain_button::plain_button,
+        Message, app_state::AppDialog::{Checkin, Import, Settings},
+    }, view::component::plain_button::plain_button,
 };
 
 pub fn developer_inspector<'a>() -> Element<'a, Message>
@@ -16,7 +16,7 @@ pub fn developer_inspector<'a>() -> Element<'a, Message>
         row![
             plain_button("dev:show_dialog").on_press(Message::ShowDialog(Checkin)),
             plain_button("dev:save_config"),
-            plain_button("dev:load_config"),
+            plain_button("dev:load_config").on_press(Message::LoadTableData),
         ]
         .align_y(Alignment::Center)
         .padding(5),
@@ -32,28 +32,32 @@ pub fn developer_inspector<'a>() -> Element<'a, Message>
     });
 
     let buttons = row![
+        plain_button("Settings").on_press(Message::ShowDialog(Settings)),
         plain_button("Import Table").on_press(Message::ShowDialog(Import)),
         plain_button("Copy Statistics").on_press(Message::CopyStatistics),
         plain_button("Send to QQ"),
-        plain_button("Edit Automation"),
     ]
     .align_y(Alignment::Center)
     .spacing(5)
     .padding(8);
 
-    container(row![dev_buttons, buttons])
-        .padding(5)
-        .style(|_| container::Style {
-            background: Some(Background::Color(Color::from_rgb8(245, 247, 250))),
+    container(
+        scrollable(row![dev_buttons, buttons]).direction(scrollable::Direction::Horizontal(
+            scrollable::Scrollbar::hidden(),
+        )),
+    )
+    .padding(5)
+    .style(|_| container::Style {
+        background: Some(Background::Color(Color::from_rgb8(245, 247, 250))),
 
-            border: Border {
-                width: 1.0,
-                radius: 12.0.into(),
-                color: Color::from_rgba8(0, 0, 0, 0.08),
-            },
+        border: Border {
+            width: 1.0,
+            radius: 12.0.into(),
+            color: Color::from_rgba8(0, 0, 0, 0.08),
+        },
 
-            ..Default::default()
-        })
-        .width(Fill)
-        .into()
+        ..Default::default()
+    })
+    .width(Fill)
+    .into()
 }

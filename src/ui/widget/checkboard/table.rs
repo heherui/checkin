@@ -7,7 +7,7 @@ pub struct Table<'a>
 
 impl<'a> Table<'a>
 {
-    pub fn new(view_model:Option<&'a TableViewModel>, style:TableStyle )-> Self
+    pub fn new(view_model: Option<&'a TableViewModel>, style: TableStyle) -> Self
     {
         Self { view_model, style }
     }
@@ -15,10 +15,16 @@ impl<'a> Table<'a>
 
 // MARK: iced widget impl
 use iced::{
-    Background, Border, Color, Element, Pixels, Point, Rectangle, Size, advanced::{layout::Node, renderer::Quad, text}, alignment, border::Radius,
+    advanced::{layout::Node, renderer::Quad, text},
+    alignment,
+    border::Radius,
+    Background, Border, Color, Element, Pixels, Point, Rectangle, Size,
 };
 
-use crate::ui::widget::checkboard::{table_style::TableStyle, view_model::TableViewModel};
+use crate::ui::widget::checkboard::{
+    table_style::TableStyle,
+    view_model::{TableCellViewModel, TableViewModel},
+};
 
 impl<'a, Message, Theme, Render> iced::advanced::Widget<Message, Theme, Render> for Table<'a>
 where
@@ -71,17 +77,17 @@ impl<'a> Table<'a>
             Quad {
                 bounds,
                 border: Border {
-                    color: Color::from_rgb(1.0, 0.0, 0.0),
+                    color: Color::from_rgb8(246, 245, 244),
                     width: 2.0,
                     radius: Radius::default(),
                 },
                 ..Quad::default()
             },
-            Color::from_rgb(0.0, 1.0, 0.0),
+            Color::from_rgb8(246, 248, 252),
         );
         renderer.fill_text(
             text::Text {
-                content: "import table data to show the table".into(),
+                content: "None Table Data".into(),
                 bounds: bounds.size(),
                 size: Pixels(24.0),
                 line_height: Default::default(),
@@ -109,63 +115,88 @@ impl<'a> Table<'a>
     ) where
         Render: iced::advanced::Renderer + text::Renderer + text::Renderer<Font = iced::Font>,
     {
-        let bounds = layout.bounds();
+        let width_offsets = &view_model.cell_width_offsets;
+        let height_offsets = &view_model.cell_height_offsets;
 
-        let row_count = view_model.row_count;
-        let column_count = view_model.column_count;
-
-        let cell_size = Size::new(
-            bounds.width / column_count as f32,
-            bounds.height / row_count as f32,
-        );
+        let first_cell_start_point = Point {
+            x: layout.bounds().x + view_model.start_point.x,
+            y: layout.bounds().y + view_model.start_point.y,
+        };
+        let mut cell_start_point = first_cell_start_point;
 
         for (y, row) in view_model.rows.iter().enumerate() {
-            for (x, cell) in row.iter().enumerate() {
-                let cell_bounds = Rectangle {
-                    x: bounds.x + cell_size.width * x as f32,
-                    y: bounds.y + cell_size.height * y as f32,
-                    width: cell_size.width,
-                    height: cell_size.height,
+
+            let mut cell_height = view_model.cell_default_height;
+            if y < height_offsets.len() {
+                cell_height += height_offsets[y];
+            };
+
+            for (x, cell_view_model) in row.iter().enumerate() {
+
+                let mut cell_width = view_model.cell_default_width;
+                if x < width_offsets.len() {
+                    cell_width += width_offsets[x];
                 };
+                let cell_bounds = Rectangle {
+                    x: cell_start_point.x,
+                    y: cell_start_point.y,
+                    width: cell_width,
+                    height: cell_height,
+                };
+                self.draw_cell(renderer, cell_bounds, cell_view_model);
 
-                //let scale = |v: f32| 0.25 + v * 0.5;
-                renderer.fill_quad(
-                    Quad {
-                        bounds: cell_bounds,
-                        border: Border {
-                            width: 2.0,
-                            radius: 0.0.into(),
-                            color: Color::from_rgb8(231, 103, 103),
-                        },
-                        shadow: Default::default(),
-                        snap: false,
-                    },
-                    // Background::Color(Color::from_rgb(
-                    //     scale(x as f32 / column_count as f32),
-                    //     scale(y as f32 / row_count as f32),
-                    //     scale((x + y) as f32 / (row_count + column_count) as f32),
-                    // )),
-                    Background::Color(Color::from_rgb8(222, 145, 145)),
-                );
-
-                renderer.fill_text(
-                    text::Text { 
-                        content: cell.label.clone(),
-                        bounds: Size::new(cell_size.width, cell_size.height),
-                        size: self.style.text_size,
-                        line_height: Default::default(),
-                        font: self.style.font,
-                        align_x: alignment::Horizontal::Center.into(),
-                        align_y: alignment::Vertical::Center,
-                        shaping: self.style.shapping,
-                        wrapping: text::Wrapping::None,
-                    },
-                    Point::new(cell_bounds.center_x(), cell_bounds.center_y()),
-                    Color::BLACK,
-                    cell_bounds,
-                );
+                // gen start point.x for next cell
+                cell_start_point.x += cell_width;
             }
+
+            // gen start point.y for next row of cells
+            cell_start_point.x = first_cell_start_point.x;
+            cell_start_point.y += cell_height;
         }
+    }
+
+    fn draw_cell<Render>(
+        &self,
+        renderer: &mut Render,
+        cell_bounds: Rectangle,
+        cell_view_model: &TableCellViewModel,
+    ) where
+        Render: iced::advanced::Renderer + text::Renderer + text::Renderer<Font = iced::Font>,
+    {
+        let border_color = match cell_view_model.border_color {
+            Some(color) => color,
+            None => cell_view_model.background_color,
+        };
+        renderer.fill_quad(
+            Quad {
+                bounds: cell_bounds,
+                border: Border {
+                    width: 2.0,
+                    radius: 0.0.into(),
+                    color: border_color
+                },
+                shadow: Default::default(),
+                snap: false,
+            },
+            Background::Color(cell_view_model.background_color),
+        );
+
+        renderer.fill_text(
+            text::Text {
+                content: cell_view_model.label.clone(),
+                bounds: Size::new(cell_bounds.width, cell_bounds.height),
+                size: self.style.text_size,
+                line_height: Default::default(),
+                font: self.style.font,
+                align_x: alignment::Horizontal::Center.into(),
+                align_y: alignment::Vertical::Center,
+                shaping: self.style.shapping,
+                wrapping: text::Wrapping::None,
+            },
+            Point::new(cell_bounds.center_x(), cell_bounds.center_y()),
+            Color::BLACK,
+            cell_bounds,
+        );
     }
 }
 

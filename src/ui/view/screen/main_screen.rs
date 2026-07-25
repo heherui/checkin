@@ -6,7 +6,7 @@ use iced::{
 
 use crate::ui::{
     app::{AppState, Message, app_state::AppDialog}, view::component::{
-        checkboard::checkboard, checkin_dialog::checkin_dialog, developer_inspector::developer_inspector, dialog_overlay::dialog_overlay, import_dialog::import_dialog, statistics::statistics,
+        checkboard::checkboard, checkin_dialog::checkin_dialog, developer_inspector::developer_inspector, dialog_overlay::dialog_overlay, import_dialog::import_dialog, settings_dialog::settings_dialog, statistics::statistics,
     },
 };
 
@@ -32,6 +32,7 @@ pub fn main_screen(app_state: &AppState) -> Element<'_, Message>
         AppDialog::None => None,
         AppDialog::Checkin => Some(dialog_overlay(checkin_dialog())),
         AppDialog::Import => Some(dialog_overlay(import_dialog(&app_state.import_dialog_state))),
+        AppDialog::Settings => Some(dialog_overlay(settings_dialog())),
     };
 
     match overlay {

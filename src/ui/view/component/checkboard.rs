@@ -7,6 +7,7 @@ pub fn checkboard<'a>(table_view_model: Option<&'a TableViewModel>) -> Element<'
             font: APP_FONT, 
             text_size: Pixels(16.0),
             shapping: text::Shaping::Advanced,
+            spacing: 1.0,
         };
     let table = Table::new(table_view_model, table_style);
 
