@@ -24,7 +24,7 @@ pub enum Message
     ImportTableDataFromExcel,
 
     ConfirmCheckin {
-        id: i32,
+        id: u128,
         time: NaiveDateTime,
     },
 

@@ -14,6 +14,7 @@ pub struct TableViewModel
 #[derive(Debug)]
 pub struct TableCellViewModel
 {
+    pub(crate) id: u128,
     pub(crate) label: String,
     pub(crate) background_color: Color,
     pub(crate) border_color: Option<Color>,
@@ -31,15 +32,18 @@ impl TableViewModel
         let column_count = table_data.table_layout.column_count;
 
         let mut rows = Vec::with_capacity(row_count as usize);
+        let mut id:u128 = 0;
         for _ in 0..row_count {
             let mut row = Vec::with_capacity(column_count as usize);
             for _ in 0..column_count {
                 row.push(TableCellViewModel {
                     label: String::new(),
                     background_color: Color::from_rgb8(222, 145, 145),
-                    border_color: Some(Color::from_rgb8(231, 103, 103))
+                    border_color: Some(Color::from_rgb8(231, 103, 103)),
+                    id,
                 });
             }
+            id += 1;
             rows.push(row);
         }
 
@@ -61,11 +65,8 @@ impl TableViewModel
             }
         }
 
-        let mut cell_width_offsets = vec![0.0; row_count as usize - 1];
-        let mut cell_height_offsets = vec![0.0; column_count as usize - 1];
-
-        cell_width_offsets[2] = 50.0;
-        cell_height_offsets[2] = 50.0;
+        let cell_width_offsets = vec![0.0; row_count as usize - 1];
+        let cell_height_offsets = vec![0.0; column_count as usize - 1];
 
         TableViewModel {
             rows,
