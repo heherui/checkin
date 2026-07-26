@@ -1,2 +1,5 @@
-pub mod view;
-pub mod component;
+mod app;
+mod widget;
+mod view;
+
+pub use app::run;

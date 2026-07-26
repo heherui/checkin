@@ -1,6 +1,7 @@
 use chrono::{DateTime, Local, Timelike};
 use std::time::SystemTime;
 
+#[allow(unused)]
 pub trait SystemTimeExt {
     fn period_string(&self) -> &'static str;
     fn formatted_string(&self) -> String;
