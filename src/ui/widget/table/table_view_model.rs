@@ -5,23 +5,32 @@ use std::collections::HashMap;
 #[derive(Debug)]
 pub struct TableViewModel
 {
-    pub(crate) cell_default_size:CellSize,
 
-    pub(crate) cell_width_offsets: Vec<f32>,
-    pub(crate) cell_height_offsets: Vec<f32>,
+    /// ideal size of the cell.
+    /// 
+    /// as the view model do not know about the actual frame size
+    /// at runtime, cells would request for its ideal size by default.
+    pub cell_default_size:CellSize,
 
-    pub(crate) start_point: Point,
+    /// width offsets from default width for specific cells in the row.
+    pub cell_width_offsets: Vec<f32>,
+    /// height offsets from default height for specific cells in the column.
+    pub cell_height_offsets: Vec<f32>,
 
-    pub(crate) rows: Vec<Vec<TableCellViewModel>>,
+    /// drawing offset from table start point for the first cell in the table.
+    pub start_point: Point,
+
+    /// cell view models, in rows<column>:Vec<Vec<Cell>>.
+    pub rows: Vec<Vec<TableCellViewModel>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TableCellViewModel
 {
-    pub(crate) id: u128,
-    pub(crate) label: String,
-    pub(crate) background_color: Color,
-    pub(crate) border_color: Option<Color>,
+    pub id: u128,
+    pub label: String,
+    pub background_color: Color,
+    pub border_color: Option<Color>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -33,6 +42,7 @@ pub enum CellSize
 
 impl TableViewModel
 {
+    #[deprecated(since = "0.1.0")]
     pub fn load_from(table_data: TableData) -> Self
     {
         let row_count = table_data.table_layout.row_count;

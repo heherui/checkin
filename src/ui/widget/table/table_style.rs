@@ -1,12 +1,21 @@
-use iced::{
-    Font, Pixels, advanced::text,
-};
+use iced::{advanced::text, widget::text::Shaping::Advanced, Font, Pixels};
 
 #[derive(Debug)]
 pub struct TableStyle
 {
-    pub font: Font,
-    pub text_size: Pixels,
-    pub spacing: f32,
+    pub label_font: Font,
+    pub label_size: Pixels,
     pub shapping: text::Shaping,
+}
+
+impl TableStyle
+{
+    pub fn default() -> Self
+    {
+        Self {
+            label_font: Font::default(),
+            label_size: Pixels(16.0),
+            shapping: Advanced,
+        }
+    }
 }
