@@ -1,8 +1,11 @@
+use crate::storage::{PersonId, TableData};
+use iced::{Color, Point, Size};
+use std::collections::HashMap;
+
 #[derive(Debug)]
 pub struct TableViewModel
 {
-    pub(crate) cell_default_width: f32,
-    pub(crate) cell_default_height: f32,
+    pub(crate) cell_default_size:CellSize,
 
     pub(crate) cell_width_offsets: Vec<f32>,
     pub(crate) cell_height_offsets: Vec<f32>,
@@ -11,6 +14,7 @@ pub struct TableViewModel
 
     pub(crate) rows: Vec<Vec<TableCellViewModel>>,
 }
+
 #[derive(Debug)]
 pub struct TableCellViewModel
 {
@@ -20,9 +24,12 @@ pub struct TableCellViewModel
     pub(crate) border_color: Option<Color>,
 }
 
-use crate::storage::{PersonId, TableData};
-use iced::{Color, Point};
-use std::collections::HashMap;
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum CellSize
+{
+    Fixed(Size),
+    StretchToFit,
+}
 
 impl TableViewModel
 {
@@ -65,14 +72,16 @@ impl TableViewModel
             }
         }
 
-        let cell_width_offsets = vec![0.0; row_count as usize - 1];
-        let cell_height_offsets = vec![0.0; column_count as usize - 1];
+        let mut cell_width_offsets = vec![0.0; row_count as usize - 1];
+        let mut cell_height_offsets = vec![0.0; column_count as usize - 1];
+
+        cell_height_offsets[2] = 30.0;
+        cell_width_offsets[2] = 30.0;
 
         TableViewModel {
             rows,
             start_point: Point { x: 0.0, y: 0.0 },
-            cell_default_width: 80.0,
-            cell_default_height: 50.0,
+            cell_default_size: CellSize::StretchToFit,
             cell_width_offsets,
             cell_height_offsets,
         }

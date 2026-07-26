@@ -12,7 +12,7 @@ use crate::{
             },
             message::Message,
         },
-        widget::checkboard::TableViewModel,
+        widget::table::TableViewModel,
     },
 };
 

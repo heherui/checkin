@@ -1,4 +1,4 @@
-use iced::{Background, Color, Element, Length::Fill, Theme, widget::container};
+use iced::{Background, Color, Element, Length::Fill, Theme, widget::{container, opaque}};
 
 use crate::ui::app::Message;
 
@@ -35,5 +35,6 @@ pub fn dialog_overlay<'a>(content:Element<'a,Message>)-> Element<'a, Message>
         ..Default::default()
     });
 
-    return dialog_overlay.into();
+    // opaque to blocking events from the overlay.
+    return opaque(dialog_overlay).into();
 }

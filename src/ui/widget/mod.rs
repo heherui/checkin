@@ -1,2 +1,2 @@
-pub mod checkboard;
+pub mod table;
 pub mod signturepad;

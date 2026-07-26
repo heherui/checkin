@@ -1,12 +1,15 @@
 use iced::{
-    widget::{column, container, stack},
+    widget::{column, container, opaque, stack},
     Element,
     Length::Fill,
 };
 
 use crate::ui::{
-    app::{AppState, Message, app_state::AppDialog}, view::component::{
-        checkboard::checkboard, checkin_dialog::checkin_dialog, developer_inspector::developer_inspector, dialog_overlay::dialog_overlay, import_dialog::import_dialog, settings_dialog::settings_dialog, statistics::statistics,
+    app::{app_state::AppDialog, AppState, Message},
+    view::component::{
+        checkboard::checkboard, checkin_dialog::checkin_dialog,
+        developer_inspector::developer_inspector, dialog_overlay::dialog_overlay,
+        import_dialog::import_dialog, settings_dialog::settings_dialog, statistics::statistics,
     },
 };
 
@@ -31,12 +34,14 @@ pub fn main_screen(app_state: &AppState) -> Element<'_, Message>
     let overlay = match app_state.dialog {
         AppDialog::None => None,
         AppDialog::Checkin => Some(dialog_overlay(checkin_dialog())),
-        AppDialog::Import => Some(dialog_overlay(import_dialog(&app_state.import_dialog_state))),
+        AppDialog::Import => Some(dialog_overlay(import_dialog(
+            &app_state.import_dialog_state,
+        ))),
         AppDialog::Settings => Some(dialog_overlay(settings_dialog())),
     };
 
     match overlay {
-        Some(overlay) => stack![content, overlay].into(),
+        Some(overlay) => stack![content, opaque(overlay)].into(),
         None => content.into(),
     }
 }

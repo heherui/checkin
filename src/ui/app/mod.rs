@@ -8,7 +8,7 @@ pub use message::Message;
 use iced::{Font, Size};
 
 use crate::{
-    storage::STORAGE, ui::{app::app_state::{AppDialog, ImportDialogState, ImportFormat::Xlsx}, view::{component::statistics::StatisticsViewModel, screen::main_screen::main_screen}, widget::checkboard::TableViewModel},
+    storage::STORAGE, ui::{app::app_state::{AppDialog, ImportDialogState, ImportFormat::Xlsx}, view::{component::statistics::StatisticsViewModel, screen::main_screen::main_screen}, widget::table::TableViewModel},
 };
 
 #[allow(unused)]

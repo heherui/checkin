@@ -27,19 +27,25 @@ impl<'a, Message> Table<'a, Message>
     }
 }
 
-use std::println;
+use std::{eprintln, println};
 
 // iced wiget impl
 use iced::{
     advanced::{layout::Node, mouse, renderer::Quad, text, widget::Tree},
     alignment,
     border::Radius,
-    Background, Border, Color, Element, Pixels, Point, Rectangle, Size,
+    mouse::{
+        Button,
+        Event::{ButtonPressed, ButtonReleased},
+    },
+    Background, Border, Color, Element,
+    Event::Mouse,
+    Pixels, Point, Rectangle, Size,
 };
 
-use crate::ui::widget::checkboard::{
+use crate::ui::widget::table::{
     table_style::TableStyle,
-    view_model::{TableCellViewModel, TableViewModel},
+    view_model::{CellSize, TableCellViewModel, TableViewModel},
 };
 
 impl<'a, Message, Theme, Render> iced::advanced::Widget<Message, Theme, Render>
@@ -86,25 +92,41 @@ where
         &mut self,
         _tree: &mut Tree,
         event: &iced::Event,
-        _layout: iced::advanced::Layout<'_>,
-        _cursor: mouse::Cursor,
+        layout: iced::advanced::Layout<'_>,
+        cursor: mouse::Cursor,
         _renderer: &Render,
         _clipboard: &mut dyn iced::advanced::Clipboard,
         _shell: &mut iced::advanced::Shell<'_, Message>,
         _viewport: &Rectangle,
     )
     {
-        if let iced::Event::Window(window_event) = event {
-            println!("WindowEvent: {window_event:?}");
+        if let Mouse(ButtonPressed(button)) = event {
+            if *button != Button::Left {
+                return;
+            };
+            if !cursor.is_over(layout.bounds()) {
+                return;
+            };
+            if let Some(p) = cursor.position() {
+                println!("mouse down: ({},{})", p.x, p.y);
+            }
         };
 
-        if let iced::Event::Mouse(mouse_event) = event {
-            println!("MouseEvent: {mouse_event:?}");
+        if let Mouse(ButtonReleased(button)) = event {
+            if *button != Button::Left {
+                return;
+            };
+            if !cursor.is_over(layout.bounds()) {
+                return;
+            };
+            if let Some(p) = cursor.position() {
+                println!("mouse down: ({},{})", p.x, p.y);
+            }
         };
     }
 }
 
-// private drawing helpers
+/// private drawing helpers
 impl<'a, Message> Table<'a, Message>
 {
     fn draw_empty_view<Render>(&self, renderer: &mut Render, layout: iced::advanced::Layout<'_>)
@@ -155,6 +177,8 @@ impl<'a, Message> Table<'a, Message>
     ) where
         Render: iced::advanced::Renderer + text::Renderer + text::Renderer<Font = iced::Font>,
     {
+        let cell_default_size = self.default_cell_size(layout);
+
         let width_offsets = &view_model.cell_width_offsets;
         let height_offsets = &view_model.cell_height_offsets;
 
@@ -165,13 +189,13 @@ impl<'a, Message> Table<'a, Message>
         let mut cell_start_point = first_cell_start_point;
 
         for (y, row) in view_model.rows.iter().enumerate() {
-            let mut cell_height = view_model.cell_default_height;
+            let mut cell_height = cell_default_size.height;
             if y < height_offsets.len() {
                 cell_height += height_offsets[y];
             };
 
             for (x, cell_view_model) in row.iter().enumerate() {
-                let mut cell_width = view_model.cell_default_width;
+                let mut cell_width = cell_default_size.width;
                 if x < width_offsets.len() {
                     cell_width += width_offsets[x];
                 };
@@ -246,58 +270,60 @@ impl<'a, Message> Table<'a, Message>
     }
 }
 
+/// cell meature helpers
 impl<'a, Message> Table<'a, Message>
 {
-    fn hit_test_cell(
-        &self,
-        layout: iced::advanced::Layout<'_>,
-        pointer: Point,
-        view_model: &TableViewModel,
-    ) -> Option<u128>
+    fn default_cell_size(&self, layout: iced::advanced::Layout<'_>) -> Size
     {
-        let width_offsets = &view_model.cell_width_offsets;
-        let height_offsets = &view_model.cell_height_offsets;
+        if self.view_model.is_none() {
+            eprintln!("fail tu meature cell width: view model is none");
+            return Size {
+                width: 0.0,
+                height: 0.0,
+            };
+        };
+        let view_model = self.view_model.unwrap();
+        let cell_default_size = view_model.cell_default_size;
 
-        let first_cell_start_point = Point {
-            x: layout.bounds().x + view_model.start_point.x,
-            y: layout.bounds().y + view_model.start_point.y,
+        if let CellSize::Fixed(size) = cell_default_size {
+            return size;
         };
 
-        let mut cell_start_point = first_cell_start_point;
+        let rows = &view_model.rows;
+        if rows.is_empty() {
+            eprintln!("fail tu meature cell width: no data for rows to meature");
+            return Size {
+                width: 0.0,
+                height: 0.0,
+            };
+        };
+        let row_count = rows.len();
+        let column_count = rows[0].len();
 
-        for (y, row) in view_model.rows.iter().enumerate() {
-            let mut cell_height = view_model.cell_default_height;
-            if y < height_offsets.len() {
-                cell_height += height_offsets[y];
+        if let CellSize::StretchToFit = cell_default_size {
+            let mut width_offsets: f32 = 0.0;
+            let mut height_offsets: f32 = 0.0;
+            for width_offset in &view_model.cell_width_offsets {
+                width_offsets += width_offset;
             }
-
-            for (x, cell_view_model) in row.iter().enumerate() {
-                let mut cell_width = view_model.cell_default_width;
-                if x < width_offsets.len() {
-                    cell_width += width_offsets[x];
-                }
-
-                let cell_bounds = Rectangle {
-                    x: cell_start_point.x,
-                    y: cell_start_point.y,
-                    width: cell_width,
-                    height: cell_height,
-                };
-
-                if cell_bounds.contains(pointer) {
-                    return Some(cell_view_model.id);
-                }
-
-                cell_start_point.x += cell_width;
+            for height_offset in &view_model.cell_height_offsets {
+                height_offsets += height_offset;
             }
+            let min_frame_width = layout.bounds().width - width_offsets;
+            let min_frame_height = layout.bounds().height - height_offsets;
+            return Size {
+                width: min_frame_width / column_count as f32,
+                height: min_frame_height / row_count as f32,
+            };
+        };
 
-            cell_start_point.x = first_cell_start_point.x;
-            cell_start_point.y += cell_height;
-        }
-
-        None
+        eprintln!("unsupported cell size, fail to meature default cell width.");
+        return Size { width: 0.0, height: 0.0 };
     }
 }
+
+/// private mouse event helpers
+impl<'a, Message> Table<'a, Message> {}
 
 /// MARK: Table into Element
 impl<'a, Message, Theme, Renderer> From<Table<'a, Message>>

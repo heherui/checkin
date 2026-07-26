@@ -1,6 +1,6 @@
 use chrono::Local;
 use iced::{Element, Pixels, advanced::text};
-use crate::ui::{app::{APP_FONT, Message}, widget::checkboard::{Table, TableStyle, TableViewModel}};
+use crate::ui::{app::{APP_FONT, Message}, widget::table::{Table, TableStyle, TableViewModel}};
 
 pub fn checkboard<'a>(table_view_model: Option<&'a TableViewModel>) -> Element<'a, Message>
 {

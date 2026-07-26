@@ -1,4 +1,4 @@
-use crate::ui::{view::component::statistics::StatisticsViewModel, widget::checkboard::TableViewModel};
+use crate::ui::{view::component::statistics::StatisticsViewModel, widget::table::TableViewModel};
 
 #[derive(Debug)]
 pub struct AppState
