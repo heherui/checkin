@@ -11,27 +11,19 @@ uuid = { version = "1.23.4", features = ["serde"]}
 toml = "0.9"
 rand = "0.10.2"
 dirs = "6"
-
-###
-# iced GUI
-###
-iced = { version = "0.14", features = ["tokio", "advanced", "svg", "advanced-shaping"] }
 tokio = "1.53"
 
-###
+# GUI
+iced = { version = "0.14", features = ["tokio", "advanced", "svg", "advanced-shaping"] }
+
 # Signture Recognization
-###
 bincode-next = "3.1.1"
 nalgebra = "0.34"
 dtw = "0.1"
 
-###
-# QQ automation macOS
-###
-objc2 = "0.6"
-objc2-app-kit = "0.3"
-objc2-foundation = "0.3"
-core-graphics = "0.24"
+[dev-dependencies]
+image = "0.25"
+serde_json = "1.0"
 
 [profile.release]
 lto = "fat"
